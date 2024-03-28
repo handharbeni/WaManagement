@@ -1,0 +1,5 @@
+{
+    "success": true,
+    "message": "Message Success, Message Error",
+    "data": "if any, could be object / json"
+}
