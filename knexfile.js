@@ -1,15 +1,15 @@
-var config = require("./tools/config");
+require('dotenv').config();
 
 module.exports = {
 
   development: {
     client: 'mysql2',
     connection: {
-      host:     config.host,
-      database: config.database,
-      user:     config.user,
-      password: config.password,
-      port:     config.port
+      host:     process.env.node_db_host,
+      database: process.env.node_db_database,
+      user:     process.env.node_db_user,
+      password: process.env.node_db_password,
+      port:     process.env.node_db_port
     },
     pool: {
       min: 1,
@@ -27,11 +27,11 @@ module.exports = {
   staging: {
     client: 'mysql2',
     connection: {
-      host:     config.host,
-      database: config.database,
-      user:     config.user,
-      password: config.password,
-      port:     config.port
+      host:     process.env.node_db_host,
+      database: process.env.node_db_database,
+      user:     process.env.node_db_user,
+      password: process.env.node_db_password,
+      port:     process.env.node_db_port
     },
     pool: {
       min: 2,
@@ -49,11 +49,11 @@ module.exports = {
   production: {
     client: 'mysql2',
     connection: {
-      host:     config.host,
-      database: config.database,
-      user:     config.user,
-      password: config.password,
-      port:     config.port
+      host:     process.env.node_db_host,
+      database: process.env.node_db_database,
+      user:     process.env.node_db_user,
+      password: process.env.node_db_password,
+      port:     process.env.node_db_port
     },
     pool: {
       min: 2,

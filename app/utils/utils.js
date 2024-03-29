@@ -1,4 +1,5 @@
 var db = require('../../knex/knex');
+require('dotenv').config()
 
 
 exports.sendStatus = function(res, status, body){

@@ -1,6 +1,5 @@
 'use strict'
 var jwt = require('jsonwebtoken');
-var config = require('../../tools/config');
 var db = require('../../knex/knex');
 var Utils = require('../utils/utils');
 var bcrypt = require('bcryptjs');
@@ -150,8 +149,8 @@ exports.login = (req, res) => {
                 if(!passwordIsValid){
                     response = { success: false, message:'Email / Password Invalid' }
                 }else{
-                    var tokenId = jwt.sign({ tokenId: rows[0].id }, config.secret, { expiresIn: config.expiresSession }) 
-                    var tokens = jwt.sign({ toid: tokenId }, config.secret, { expiresIn: config.expiresSession });
+                    var tokenId = jwt.sign({ tokenId: rows[0].id }, process.env.node_secret, { expiresIn: process.env.node_expiresSession }) 
+                    var tokens = jwt.sign({ toid: tokenId }, process.env.node_secret, { expiresIn: process.env.node_expiresSession });
                     var bodyResponse = [];
                     bodyResponse.push({
                         token: tokens,

@@ -1,13 +1,15 @@
+require('dotenv').config();
+
 var compression = require('compression'),
     helmet = require('helmet'),
-    config = require('./tools/config'),
     cors = require('cors')
     express = require('express'),
     app = express(),
-    port = process.env.PORT || config.server_port,
+    port = process.env.node_port,
     bodyParser = require('body-parser'),
     swaggerJsdoc = require("swagger-jsdoc"),
     swaggerUi = require("swagger-ui-express");
+
 
 const optionsJsDoc = {
     definition: {
@@ -28,7 +30,7 @@ const optionsJsDoc = {
         },
         servers: [
             {
-                url: "http://"+config.server+":"+config.server_port+"/",
+                url: "http://"+process.env.node_server+":"+process.env.node_port+"/",
             },
         ],
         components: {
@@ -60,4 +62,4 @@ route(app);
 const specs = swaggerJsdoc(optionsJsDoc);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
-app.listen(port, () => console.log('Express server listening on port ' + port));
+app.listen(process.env.node_port, () => console.log('Express server listening on port ' + process.env.node_port));
