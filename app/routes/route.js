@@ -18,4 +18,6 @@ module.exports = function(app) {
     app.route('/listGroup').post(general.index).get(verifyToken, group.getListGroup).put(general.index).delete(general.index);
     app.route('/listGroupContact').post(verifyToken, group.addContactstoGroup).get(verifyToken, group.getListGroupContact).put(general.index).delete(verifyToken, group.deleteContactFromGroup);
     app.route('/wa-pm').post(verifyToken, wa.sendPm).get(general.index).put(general.index).delete(general.index);
+    app.route('/wa-bulk').post(verifyToken, wa.sendBulk).get(general.index).put(general.index).delete(general.index);
+    app.route('/wa-import').post(verifyToken, wa.importData).get(general.index).put(general.index).delete(general.index);
 }

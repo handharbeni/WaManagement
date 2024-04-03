@@ -149,6 +149,7 @@ exports.login = (req, res) => {
                 if(!passwordIsValid){
                     response = { success: false, message:'Email / Password Invalid' }
                 }else{
+                    console.log(process.env.node_)
                     var tokenId = jwt.sign({ tokenId: rows[0].id }, process.env.node_secret, { expiresIn: process.env.node_expiresSession }) 
                     var tokens = jwt.sign({ toid: tokenId }, process.env.node_secret, { expiresIn: process.env.node_expiresSession });
                     var bodyResponse = [];
