@@ -20,4 +20,6 @@ module.exports = function(app) {
     app.route('/wa-pm').post(verifyToken, wa.sendPm).get(general.index).put(general.index).delete(general.index);
     app.route('/wa-bulk').post(verifyToken, wa.sendBulk).get(general.index).put(general.index).delete(general.index);
     app.route('/wa-import').post(verifyToken, wa.importData).get(general.index).put(general.index).delete(general.index);
+    app.route('/wa-login').post(general.index).get(wa.loginWa).put(general.index).delete(general.index);
+    // app.route('/ga-webhooks').post(wa.webhooks).get(wa.webhooks).put(general.index).delete(general.index);
 }

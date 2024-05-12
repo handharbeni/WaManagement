@@ -83,7 +83,47 @@ const whatsAppClient = require("@green-api/whatsapp-api-client");
  *              $ref: "./app/response-schema/response.json"
  *       500:
  *         description: Some server error 
+ * /wa-login:
+ *   get:
+ *     summary: Login WA Account
+ *     tags: [WA]
+ *     produces:
+ *          - application/json
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error 
+ * /ga-webhooks:
+ *   post:
+ *     summary: WA Webhooks
+ *     tags: [WA]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: body
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error  
  */
+
+exports.webhooks = (req, res) => {
+    // var express = require('express')
+    // var app = express();
+    // app.use(express.json());
+    // const webHookAPI = whatsAppClient.webhookAPI(app, '/ga-webhooks')
+    // webHookAPI.onIncomingMessageText((data, idInstance, idMessage, sender, typeMessage, textMessage) => {
+    //     console.log(`Incoming Notification data ${JSON.stringify(data)}`)
+    // });
+}
 
 exports.sendPm = (req, res) => {
     var response = {};
@@ -207,6 +247,35 @@ exports.importData = (req, res) => {
             // response = { success: true, message:'Something wen\'t wrong', data: error }
             Utils.sendStatus(res, 200, response);
         });
+}
+
+exports.loginWa = (req, res) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: 'https://qr.green-api.com/waInstance7103921358/83cf71910a324004afb5db03cca8e5e207e9989c95414702ad',
+        headers: { 
+            'Content-Type': 'application/json'
+        }
+    };
+
+    axios.request(config)
+        .then((response) => {
+            console.log(response);
+            Utils.sendStatus(res, 200, response);
+        })
+        .catch((error) => {
+            // response = { success: true, message:'Something wen\'t wrong', data: error }
+            Utils.sendStatus(res, 200, response);
+        });
+}
+
+function getBase64(url) {
+    return axios
+        .get(url, {
+            responseType: 'arraybuffer'
+        })
+        .then(response => Buffer.from(response.data, 'binary').toString('base64'))
 }
 
 function sendPmWa(idContact, idUser, message) {

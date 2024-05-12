@@ -2,13 +2,14 @@ require('dotenv').config();
 
 var compression = require('compression'),
     helmet = require('helmet'),
-    cors = require('cors')
+    cors = require('cors'),
     express = require('express'),
     app = express(),
     port = process.env.node_port,
     bodyParser = require('body-parser'),
     swaggerJsdoc = require("swagger-jsdoc"),
-    swaggerUi = require("swagger-ui-express");
+    swaggerUi = require("swagger-ui-express"),
+    whatsAppClient = require("@green-api/whatsapp-api-client");
 
 
 const optionsJsDoc = {
@@ -30,7 +31,7 @@ const optionsJsDoc = {
         },
         servers: [
             {
-                url: "http://"+process.env.node_server+":"+process.env.node_port+"/",
+                url: process.env.node_server,
             },
         ],
         components: {
@@ -51,12 +52,18 @@ const optionsJsDoc = {
 };
 
 app.use(cors())
-app.use(compression());
-app.use(helmet());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json({limit: '100mb'}));
+app.use(compression())
+app.use(helmet())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json({limit: '100mb'}))
+
+const webHookAPI = whatsAppClient.webhookAPI(app, '/ga-webhooks')
+webHookAPI.onIncomingMessageText((data, idInstance, idMessage, sender, typeMessage, textMessage) => {
+    console.log(`Incoming Notification data ${JSON.stringify(data)}`)
+});
 
 var route = require('./app/routes/route');
+
 route(app);
 
 const specs = swaggerJsdoc(optionsJsDoc);
