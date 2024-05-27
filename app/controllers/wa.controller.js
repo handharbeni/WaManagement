@@ -95,15 +95,18 @@ const whatsAppClient = require("@green-api/whatsapp-api-client");
  *         shema: 
  *              $ref: "./app/response-schema/response.json"
  *       500:
- *         description: Some server error 
- * /ga-webhooks:
+ *         description: Some server error
+ * /wa-template:
  *   post:
- *     summary: WA Webhooks
+ *     summary: Send WA Template
  *     tags: [WA]
  *     produces:
  *          - application/json
  *     parameters:
- *          - name: body
+ *          - name: id_template
+ *            in: query
+ *            required: true
+ *          - name: json
  *            in: query
  *            required: true
  *     responses:
@@ -112,7 +115,7 @@ const whatsAppClient = require("@green-api/whatsapp-api-client");
  *         shema: 
  *              $ref: "./app/response-schema/response.json"
  *       500:
- *         description: Some server error  
+ *         description: Some server error
  */
 
 exports.webhooks = (req, res) => {
@@ -278,6 +281,30 @@ function getBase64(url) {
         .then(response => Buffer.from(response.data, 'binary').toString('base64'))
 }
 
+exports.sendPmWaByNumber = (phoneNumber, textMessage) => {
+    const restAPI = whatsAppClient.restAPI(({
+        idInstance: process.env.node_greenapi_idinstance,
+        apiTokenInstance: process.env.node_greenapi_tokeninstance
+    }));
+    
+    var phoneDestination = phoneNumber;
+    while(phoneDestination.charAt(0) === '+'){
+        phoneDestination = phoneDestination.substring(1);
+    }
+    const data = {
+        chatId: phoneDestination+'@c.us',
+        message: textMessage
+    };
+
+    restAPI.message.sendMessage(data.chatId, phoneDestination, data.message)
+        .then(dataResponse => {
+            console.log(`sendMessageResponse ${dataResponse}`);
+        })
+        .catch(error => {
+            console.log(`errorSendMessage ${error}`);
+        })
+}
+
 function sendPmWa(idContact, idUser, message) {
     return new Promise((resolve, reject) => {
         try {
@@ -318,4 +345,46 @@ function sendPmWa(idContact, idUser, message) {
             reject(err)
         }
     });
+}
+
+exports.sendWaTemplate = (req, res) => {
+    var response = {success: true, message:'Message has been sent'};
+    var userId = req.userId
+    var dataSelectTemplate = {
+        owner_id: userId,
+        id: req.query.id_template
+    }
+    var json = JSON.parse(req.query.json);
+    console.log(dataSelectTemplate)
+    db('template_message')
+        .where(dataSelectTemplate)
+        .then(rows => {
+            var message = rows[0].template;
+            for(var attributename in json){
+                for( var i = 0,length = json[attributename].length; i < length; i++ ) {
+                    var hp = json[attributename][i]['hp'];
+                    var message = Utils.replaceMe(message, json[attributename][i]);
+                    var sendWa = Utils.sendWa(hp, message);
+                    console.log(sendWa);
+                }
+            }
+            // console.log(rows[0].template);
+        })
+        .catch(error => {
+            console.log(error);
+        })
+        .finally(() => {
+            Utils.sendStatus(res, 200, response);
+        });
+
+    // var json = JSON.parse('{"data":[{"hp":"+6281556617741","name":"Beni","status":"Morning","level":"Developer"}]}')
+    // var template = "hi {name}, good {status}, welcome as a {level}";
+    // for(var attributename in json){
+    //     for( var i = 0,length = json[attributename].length; i < length; i++ ) {
+    //         var hp = json[attributename][i]['hp'];
+    //         var message = Utils.replaceMe(template, json[attributename][i]);
+    //         var sendWa = Utils.sendWa(hp, message);
+    //         console.log(sendWa);
+    //     }
+    // }
 }

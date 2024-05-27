@@ -1,6 +1,9 @@
 var db = require('../../knex/knex');
 require('dotenv').config()
 
+const axios = require('axios');
+const whatsAppClient = require("@green-api/whatsapp-api-client");
+
 
 exports.sendStatus = function(res, status, body){
     res.status(status).send(body);
@@ -68,3 +71,45 @@ exports.getConfigs = function(prefix) {
         });
     })
 }
+
+exports.replaceMe = function (template, data) {
+    // JSON.parse {"name": "Beni", "status":"morning"}
+    // hi {name}, good {status}
+    const pattern = /{\s*(\w+?)\s*}/g; // {property}
+    return template.replace(pattern, (_, token) => data[token] || '');
+}
+
+exports.sendWa = async function(phoneNumber, message) {
+    const restAPI = whatsAppClient.restAPI(({
+        idInstance: process.env.node_greenapi_idinstance,
+        apiTokenInstance: process.env.node_greenapi_tokeninstance
+    }));
+    
+    var phoneDestination = phoneNumber;
+    while(phoneDestination.charAt(0) === '+'){
+        phoneDestination = phoneDestination.substring(1);
+    }
+    const data = {
+        chatId: phoneDestination+'@c.us',
+        message: message
+    };
+
+    await restAPI.message.sendMessage(phoneDestination, phoneDestination, data.message)
+        .then(dataResponse => {
+            return "OK"
+        })
+        .catch(error => {
+            return "FAILED"
+        })
+}
+
+// var json = JSON.parse('{"data":[{"hp":"+6281556617741","name":"Beni","status":"Morning","level":"Developer"}]}')
+// var template = "hi {name}, good {status}, welcome as a {level}";
+// for(var attributename in json){
+//     for( var i = 0,length = json[attributename].length; i < length; i++ ) {
+//         var hp = json[attributename][i]['hp'];
+//         var message = Utils.replaceMe(template, json[attributename][i]);
+//         var sendWa = Utils.sendWa(hp, message);
+//         console.log(sendWa);
+//     }
+// }
