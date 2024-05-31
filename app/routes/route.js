@@ -26,6 +26,7 @@ module.exports = function(app) {
     app.route('/wa-login').post(general.index).get(wa.loginWa).put(general.index).delete(general.index);
     app.route('/template-message').post(verifyToken, message.templateMesssage).get(verifyToken, message.getTemplateMessage).put(verifyToken, message.updateTemplateMessage).delete(verifyToken, message.deleteTemplateMessage);
     app.route('/wa-template').post(verifyToken, wa.sendWaTemplate);
+    app.route('/wa-raw-template').post(verifyToken, wa.sendWaRawTemplate);
     // app.route('/ga-webhooks').post(wa.webhooks).get(wa.webhooks).put(general.index).delete(general.index);
 
 

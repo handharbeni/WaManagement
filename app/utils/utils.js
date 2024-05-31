@@ -103,6 +103,11 @@ exports.sendWa = async function(phoneNumber, message) {
         })
 }
 
+exports.getBracketValues = function (str) {
+    const regex = /[^{\}]+(?=})/g;
+    return str.match(/(?<=\{).*?(?=\})/igm);
+}
+
 // var json = JSON.parse('{"data":[{"hp":"+6281556617741","name":"Beni","status":"Morning","level":"Developer"}]}')
 // var template = "hi {name}, good {status}, welcome as a {level}";
 // for(var attributename in json){

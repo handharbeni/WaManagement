@@ -116,6 +116,26 @@ const whatsAppClient = require("@green-api/whatsapp-api-client");
  *              $ref: "./app/response-schema/response.json"
  *       500:
  *         description: Some server error
+ * /wa-raw-template:
+ *   post:
+ *     summary: Send WA Template
+ *     tags: [WA]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: template
+ *            in: query
+ *            required: true
+ *          - name: json
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error
  */
 
 exports.webhooks = (req, res) => {
@@ -355,36 +375,44 @@ exports.sendWaTemplate = (req, res) => {
         id: req.query.id_template
     }
     var json = JSON.parse(req.query.json);
-    console.log(dataSelectTemplate)
+    console.log(json)
     db('template_message')
         .where(dataSelectTemplate)
         .then(rows => {
-            var message = rows[0].template;
+            
             for(var attributename in json){
-                for( var i = 0,length = json[attributename].length; i < length; i++ ) {
+                // console.log(json[attributename][0]);
+                for( var i = 0; i < json[attributename].length; i++ ) {
+                    var message = rows[0].template;
                     var hp = json[attributename][i]['hp'];
-                    var message = Utils.replaceMe(message, json[attributename][i]);
-                    var sendWa = Utils.sendWa(hp, message);
-                    console.log(sendWa);
+                    message = Utils.replaceMe(message, json[attributename][i]);
+                    Utils.sendWa(hp, message);
                 }
             }
             // console.log(rows[0].template);
         })
         .catch(error => {
-            console.log(error);
+            response = {success: false, message: error}
+            Utils.sendStatus(res, 200, response);
         })
         .finally(() => {
             Utils.sendStatus(res, 200, response);
         });
+}
 
-    // var json = JSON.parse('{"data":[{"hp":"+6281556617741","name":"Beni","status":"Morning","level":"Developer"}]}')
-    // var template = "hi {name}, good {status}, welcome as a {level}";
-    // for(var attributename in json){
-    //     for( var i = 0,length = json[attributename].length; i < length; i++ ) {
-    //         var hp = json[attributename][i]['hp'];
-    //         var message = Utils.replaceMe(template, json[attributename][i]);
-    //         var sendWa = Utils.sendWa(hp, message);
-    //         console.log(sendWa);
-    //     }
-    // }
+exports.sendWaRawTemplate = (req, res) => {
+    var response = {success: true, message:'Message has been sent'};
+    var template = req.query.template;
+    var json = JSON.parse(req.query.json);
+    // console.log(Utils.getBracketValues(template));
+    for (var attributename in json){
+        for( var i = 0; i < json[attributename].length; i++ ) {
+            var message = template;
+            var hp = json[attributename][i]['hp'];
+            message = Utils.replaceMe(message, json[attributename][i]);
+            Utils.sendWa(hp, message);
+        }
+    }
+
+    Utils.sendStatus(res, 200, response);
 }
