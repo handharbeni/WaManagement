@@ -108,6 +108,11 @@ exports.getBracketValues = function (str) {
     return str.match(/(?<=\{).*?(?=\})/igm);
 }
 
+exports.validatePhoneNumber = function (str) {
+    var phonePattern = /^\+?([0-9]{2})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/;
+    return str.match(phonePattern)?true:false;
+}
+
 // var json = JSON.parse('{"data":[{"hp":"+6281556617741","name":"Beni","status":"Morning","level":"Developer"}]}')
 // var template = "hi {name}, good {status}, welcome as a {level}";
 // for(var attributename in json){

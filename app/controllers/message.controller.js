@@ -90,11 +90,26 @@ exports.templateMesssage = (req, res) => {
         owner_id: userId,
         template: template
     }
-
+    var fields = Utils.getBracketValues(template);
+    var mandatoryFields = "hp";
+    var newFields = mandatoryFields+","+fields;
     db('template_message')
         .insert(dataInsert)
-        .then(() => {
-            response = { success: true, message:'Template Added' }
+        .returning('id')
+        .then(async ([id]) => {
+            var dataInsertFields = {
+                owner_id: userId,
+                template_id: id,
+                field: newFields.toString()
+            }
+            await db('template_fields')
+                .insert(dataInsertFields)
+                .then(() => {
+                    response = { success: true, message:'Template Added' }
+                })
+                .catch(error => {
+                    response = { success: true, message:'Template Added but field not recognized '+error }
+                })
         })
         .catch(error => {
             response = { success: false, message: 'Failed To Add Tempalte', data: error }
@@ -103,7 +118,6 @@ exports.templateMesssage = (req, res) => {
             Utils.sendStatus(res, 200, response);
         })
 }
-
 exports.getTemplateMessage = (req, res) => {
     var response = {};
     var userId = req.userId
@@ -122,7 +136,6 @@ exports.getTemplateMessage = (req, res) => {
             Utils.sendStatus(res, 200, response)
         });
 }
-
 exports.updateTemplateMessage = (req, res) => {
     var response = {};
     var userId = req.userId
@@ -133,10 +146,29 @@ exports.updateTemplateMessage = (req, res) => {
     var dataUpdate = {
         template: req.query.template
     }
+    var fields = Utils.getBracketValues(req.query.template)
+    var mandatoryFields = "hp";
+    var newFields = mandatoryFields+","+fields;
     db('template_message')
         .where(dataSelect)
         .update(dataUpdate)
         .then(async (rows) => {
+            var dataFieldCondition = {
+                owner_id: userId,
+                template_id: req.query.id_template,
+            }
+            var dataFieldUpdate = {
+                field: newFields.toString()
+            }
+            await db('template_fields')
+                .where(dataFieldCondition)
+                .update(dataFieldUpdate)
+                .then(() => {
+                    response = { success: true, message:'Template Added' }
+                })
+                .catch(error => {
+                    response = { success: true, message:'Template Added but field not recognized '+error }
+                })
             response = { success: true, message:'Template Updated', data: rows }
         })
         .catch(error => {
@@ -146,7 +178,6 @@ exports.updateTemplateMessage = (req, res) => {
             Utils.sendStatus(res, 200, response)
         });
 }
-
 exports.deleteTemplateMessage = (req, res) => {
     var response = {};
     var userId = req.userId
@@ -163,6 +194,257 @@ exports.deleteTemplateMessage = (req, res) => {
         })
         .catch(error => {
             response = { success: false, message: 'Failed To Delete Template', data: error }
+        })
+        .finally(() => {
+            Utils.sendStatus(res, 200, response)
+        });
+}
+
+/**
+ * @swagger
+ * tags: 
+ *   name: MessageFields
+ *   description: WA MANAGEMENT
+ * /field-message:
+ *   get:
+ *     summary: Template Fields Message
+ *     tags: [MessageFields]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: id_template
+ *            type: string
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error 
+ */
+exports.getFields = (req, res) => {
+    var response = {};
+    var userId = req.userId
+    var dataSelect = {
+        owner_id: userId,
+        template_id: req.query.id_template
+    }
+    db('template_fields')
+        .where(dataSelect)
+        .then(rows => {
+            response = { success: true, message:'Field Fetched', data: rows }
+        })
+        .catch(error => {
+            response = { success: false, message:'Failed to fetch fields', data: rows }
+        })
+        .finally(() => {
+            Utils.sendStatus(res, 200, response)
+        })
+}
+
+/**
+ * @swagger
+ * tags: 
+ *   name: MessageValues
+ *   description: WA MANAGEMENT
+ * /value-message:
+ *   post:
+ *     summary: Template Message Value
+ *     tags: [MessageValues]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: id_template
+ *            type: string
+ *            in: query
+ *            required: true
+ *          - name: id_field_template
+ *            type: string
+ *            in: query
+ *            required: true
+ *          - name: field
+ *            type: string
+ *            in: query
+ *            required: true
+ *          - name: value
+ *            type: string
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error 
+ *   get:
+ *     summary: Template Message Value
+ *     tags: [MessageValues]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: id_field_template
+ *            type: string
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error 
+ *   put:
+ *     summary: Template Message Value
+ *     tags: [MessageValues]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: id_template
+ *            type: string
+ *            in: query
+ *            required: true
+ *          - name: id_field_template
+ *            type: string
+ *            in: query
+ *            required: true
+ *          - name: id_values
+ *            type: string
+ *            in: query
+ *            required: true
+ *          - name: field
+ *            type: string
+ *            in: query
+ *            required: true
+ *          - name: value
+ *            type: string
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error 
+ *   delete:
+ *     summary: Template Message Value
+ *     tags: [MessageValues]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: id_values
+ *            type: string
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error 
+ */
+
+exports.addValues = (req, res) => {
+    var response = {};
+    var userId = req.userId
+    var dataInsert = {
+        owner_id: userId,
+        template_id: req.query.id_template,
+        template_field_id: req.query.id_field_template,
+        field: req.query.field,
+        value: req.query.value
+    }
+    var phoneNumber = req.query.value.split(',')[0].trim();
+    if(Utils.validatePhoneNumber(phoneNumber)) {
+        db('template_values')
+            .insert(dataInsert)
+            .then(() => {
+                response = { success: true, message: 'Values Added'}
+            })
+            .catch(error => {
+                response = { success: false, message: 'Failed To Add Values', data: error }
+            })
+            .finally(() => {
+                Utils.sendStatus(res, 200, response)
+            })
+    } else {
+        response = { success: false, message: 'Invalid Phone Number'}
+        Utils.sendStatus(res, 200, response)
+    }
+
+}
+exports.getValues = (req, res) => {
+    var response = {};
+    var userId = req.userId
+    var dataSelect = {
+        owner_id: userId,
+        template_field_id: req.query.id_field_template,
+    }
+    db('template_values')
+        .where(dataSelect)
+        .then(rows => {
+            response = { success: true, message: 'Success get values', data: rows }
+        })
+        .catch(error => {
+            response = { success: false, message: 'Failed To Add Values', data: error }
+        })
+        .finally(() => {
+            Utils.sendStatus(res, 200, response)
+        })
+
+}
+exports.updateValues = (req, res) => {
+    var response = {};
+    var userId = req.userId
+    var dataSelect = {
+        owner_id: userId,
+        template_id: req.query.id_template,
+        template_field_id: req.query.id_field_template,
+        id: req.query.id_values
+    }
+    var dataUpdate = {
+        field: req.query.field,
+        value: req.query.value
+    }
+    var phoneNumber = req.query.value.split(',')[0].trim();
+    if (Utils.validatePhoneNumber(phoneNumber)) {
+        db('template_values')
+            .where(dataSelect)
+            .update(dataUpdate)
+            .then(() => {
+                response = { success: true, message: 'Values Updated'}
+            })
+            .catch(error => {
+                response = { success: false, message: 'Failed To Update the Values', data: error }
+            })
+            .finally(() => {
+                Utils.sendStatus(res, 200, response)
+            })
+    } else {
+        response = { success: false, message: 'Invalid Phone Number'}
+        Utils.sendStatus(res, 200, response)
+    }
+
+}
+exports.deleteValues = (req, res) => {
+    var response = {};
+    var userId = req.userId
+    var dataSelect = {
+        owner_id: userId,
+        id: req.query.id_values
+    }
+    db('template_values')
+        .where(dataSelect)
+        .del()
+        .then(async (rows) => {
+            response = { success: true, message:'Values Deleted', data: rows }
+        })
+        .catch(error => {
+            response = { success: false, message: 'Failed To Delete Values', data: error }
         })
         .finally(() => {
             Utils.sendStatus(res, 200, response)

@@ -27,6 +27,8 @@ module.exports = function(app) {
     app.route('/template-message').post(verifyToken, message.templateMesssage).get(verifyToken, message.getTemplateMessage).put(verifyToken, message.updateTemplateMessage).delete(verifyToken, message.deleteTemplateMessage);
     app.route('/wa-template').post(verifyToken, wa.sendWaTemplate);
     app.route('/wa-raw-template').post(verifyToken, wa.sendWaRawTemplate);
+    app.route('/field-message').post(general.index).get(verifyToken, message.getFields).put(general.index).delete(general.index);
+    app.route('/value-message').post(verifyToken, message.addValues).get(verifyToken, message.getValues).put(verifyToken, message.updateValues).delete(verifyToken, message.deleteValues);
     // app.route('/ga-webhooks').post(wa.webhooks).get(wa.webhooks).put(general.index).delete(general.index);
 
 
