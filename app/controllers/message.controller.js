@@ -359,23 +359,29 @@ exports.addValues = (req, res) => {
         value: req.query.value
     }
     var phoneNumber = req.query.value.split(',')[0].trim();
-    if(Utils.validatePhoneNumber(phoneNumber)) {
-        db('template_values')
-            .insert(dataInsert)
-            .then(() => {
-                response = { success: true, message: 'Values Added'}
-            })
-            .catch(error => {
-                response = { success: false, message: 'Failed To Add Values', data: error }
-            })
-            .finally(() => {
-                Utils.sendStatus(res, 200, response)
-            })
+    var fieldCount = req.query.field.split(',').length;
+    var valueCount = req.query.value.split(',').length;
+    if(fieldCount != valueCount) {
+        if(Utils.validatePhoneNumber(phoneNumber)) {
+            db('template_values')
+                .insert(dataInsert)
+                .then(() => {
+                    response = { success: true, message: 'Values Added'}
+                })
+                .catch(error => {
+                    response = { success: false, message: 'Failed To Add Values', data: error }
+                })
+                .finally(() => {
+                    Utils.sendStatus(res, 200, response)
+                })
+        } else {
+            response = { success: false, message: 'Invalid Phone Number'}
+            Utils.sendStatus(res, 200, response)
+        }
     } else {
-        response = { success: false, message: 'Invalid Phone Number'}
+        response = { success: false, message: 'Value != Field'}
         Utils.sendStatus(res, 200, response)
     }
-
 }
 exports.getValues = (req, res) => {
     var response = {};
@@ -411,24 +417,30 @@ exports.updateValues = (req, res) => {
         value: req.query.value
     }
     var phoneNumber = req.query.value.split(',')[0].trim();
-    if (Utils.validatePhoneNumber(phoneNumber)) {
-        db('template_values')
-            .where(dataSelect)
-            .update(dataUpdate)
-            .then(() => {
-                response = { success: true, message: 'Values Updated'}
-            })
-            .catch(error => {
-                response = { success: false, message: 'Failed To Update the Values', data: error }
-            })
-            .finally(() => {
-                Utils.sendStatus(res, 200, response)
-            })
+    var fieldCount = req.query.field.split(',').length;
+    var valueCount = req.query.value.split(',').length;
+    if(fieldCount != valueCount) {
+        if (Utils.validatePhoneNumber(phoneNumber)) {
+            db('template_values')
+                .where(dataSelect)
+                .update(dataUpdate)
+                .then(() => {
+                    response = { success: true, message: 'Values Updated'}
+                })
+                .catch(error => {
+                    response = { success: false, message: 'Failed To Update the Values', data: error }
+                })
+                .finally(() => {
+                    Utils.sendStatus(res, 200, response)
+                })
+        } else {
+            response = { success: false, message: 'Invalid Phone Number'}
+            Utils.sendStatus(res, 200, response)
+        }    
     } else {
-        response = { success: false, message: 'Invalid Phone Number'}
+        response = { success: false, message: 'Value != Field'}
         Utils.sendStatus(res, 200, response)
     }
-
 }
 exports.deleteValues = (req, res) => {
     var response = {};
