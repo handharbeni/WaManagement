@@ -96,9 +96,11 @@ exports.sendWa = async function(phoneNumber, message) {
 
     await restAPI.message.sendMessage(phoneDestination, phoneDestination, data.message)
         .then(dataResponse => {
+            console.log(dataResponse)
             return "OK"
         })
         .catch(error => {
+            console.log(error)
             return "FAILED"
         })
 }

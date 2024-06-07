@@ -150,8 +150,8 @@ exports.login = (req, res) => {
                     response = { success: false, message:'Email / Password Invalid' }
                 }else{
                     console.log(process.env.node_)
-                    var tokenId = jwt.sign({ tokenId: rows[0].id }, process.env.node_secret, { expiresIn: process.env.node_expiresSession }) 
-                    var tokens = jwt.sign({ toid: tokenId }, process.env.node_secret, { expiresIn: process.env.node_expiresSession });
+                    var tokenId = jwt.sign({ tokenId: rows[0].id, exp: Math.floor(Date.now() / 1000) + ((60 * 60)*480)}, process.env.node_secret, {}) 
+                    var tokens = jwt.sign({ toid: tokenId, exp: Math.floor(Date.now() / 1000) + ((60 * 60)*480)}, process.env.node_secret, {});
                     var bodyResponse = [];
                     bodyResponse.push({
                         token: tokens,
@@ -167,6 +167,7 @@ exports.login = (req, res) => {
             }
         })
         .catch(error => {
+            console.log(error)
             response = { success: false, message: 'Failed Get Data', data: error }
         })
         .finally(() => {

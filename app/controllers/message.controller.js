@@ -450,3 +450,70 @@ exports.deleteValues = (req, res) => {
             Utils.sendStatus(res, 200, response)
         });
 }
+
+
+/**
+ * @swagger
+ * tags: 
+ *   name: SendTemplates
+ *   description: WA MANAGEMENT
+ * /send-template:
+ *   post:
+ *     summary: Send Templates
+ *     tags: [SendTemplates]
+ *     produces:
+ *          - application/json
+ *     parameters:
+ *          - name: id_template
+ *            type: string
+ *            in: query
+ *            required: true
+ *     responses:
+ *       200:
+ *         description: Ok
+ *         shema: 
+ *              $ref: "./app/response-schema/response.json"
+ *       500:
+ *         description: Some server error 
+ */
+exports.sendTemplates = (req, res) => {
+    var response = {};
+    var userId = req.userId
+    var object = {}
+    var key = "data"
+    object[key] = []
+    var dataSelect = {
+        'template_fields.owner_id': userId,
+        'template_fields.template_id': req.query.id_template
+    }
+    db.select('template_fields.id', 'template_fields.template_id', 'template_fields.field', 'template_values.value', 'template_message.template')
+        .from('template_fields')
+        .where(dataSelect)
+        .innerJoin('template_values', 'template_fields.id', 'template_values.template_field_id')
+        .innerJoin('template_message', 'template_fields.template_id', 'template_message.id')
+        .then(rows => {
+            rows.forEach(function(value){
+                var template = value.template;
+                var field = value.field.split(',');
+                var value = value.value.split(',');
+                var child = {}
+                for(var i=0;i<field.length;i++) {
+                    child[field[i]] = value[i];
+                }
+                var json = JSON.parse(JSON.stringify(child));
+                var hp = json.hp;
+                template = Utils.replaceMe(template, json);
+                Utils.sendWa(hp, template);
+                object[key].push(child);
+            });
+            console.log(JSON.stringify(object));
+            response = { success: true, message:'Template Sent', data: object }
+        })
+        .catch(error => {
+            console.log(error);
+            response = { success: false, message:'Failed to send the template', data: error }
+        })
+        .finally(() => {
+            Utils.sendStatus(res, 200, response)
+        });
+}

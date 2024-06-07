@@ -404,7 +404,6 @@ exports.sendWaRawTemplate = (req, res) => {
     var response = {success: true, message:'Message has been sent'};
     var template = req.query.template;
     var json = JSON.parse(req.query.json);
-    // console.log(Utils.getBracketValues(template));
     for (var attributename in json){
         for( var i = 0; i < json[attributename].length; i++ ) {
             var message = template;
