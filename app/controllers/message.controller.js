@@ -14,6 +14,11 @@ var Utils = require('../utils/utils');
  *     produces:
  *          - application/json
  *     parameters:
+ *          - name: template_name
+ *            type: string
+ *            in: query
+ *            required: true
+ *            format: textarea
  *          - name: template
  *            type: string
  *            in: query
@@ -86,9 +91,11 @@ exports.templateMesssage = (req, res) => {
         owner_id: userId
     }
     var template = req.query.template;
+    var templateName = req.query.template_name;
     var dataInsert = {
         owner_id: userId,
-        template: template
+        template: template,
+        template_name: templateName
     }
     var fields = Utils.getBracketValues(template);
     var mandatoryFields = "hp";
@@ -361,7 +368,9 @@ exports.addValues = (req, res) => {
     var phoneNumber = req.query.value.split(',')[0].trim();
     var fieldCount = req.query.field.split(',').length;
     var valueCount = req.query.value.split(',').length;
-    if(fieldCount != valueCount) {
+    console.log(fieldCount);
+    console.log(valueCount);
+    if(fieldCount == valueCount) {
         if(Utils.validatePhoneNumber(phoneNumber)) {
             db('template_values')
                 .insert(dataInsert)
@@ -419,7 +428,9 @@ exports.updateValues = (req, res) => {
     var phoneNumber = req.query.value.split(',')[0].trim();
     var fieldCount = req.query.field.split(',').length;
     var valueCount = req.query.value.split(',').length;
-    if(fieldCount != valueCount) {
+    console.log(fieldCount);
+    console.log(valueCount);
+    if(fieldCount == valueCount) {
         if (Utils.validatePhoneNumber(phoneNumber)) {
             db('template_values')
                 .where(dataSelect)
@@ -493,7 +504,7 @@ exports.sendTemplates = (req, res) => {
     var userId = req.userId
     var object = {}
     var key = "data"
-    object[key] = []
+    object = []
     var dataSelect = {
         'template_fields.owner_id': userId,
         'template_fields.template_id': req.query.id_template
@@ -516,10 +527,10 @@ exports.sendTemplates = (req, res) => {
                 var hp = json.hp;
                 template = Utils.replaceMe(template, json);
                 Utils.sendWa(hp, template);
-                object[key].push(child);
+                object.push(child);
             });
             console.log(JSON.stringify(object));
-            response = { success: true, message:'Template Sent', data: object }
+            response = { success: true, message:'Template Sent', data:object }
         })
         .catch(error => {
             console.log(error);

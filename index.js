@@ -63,13 +63,6 @@ route(app);
 
 const specs = swaggerJsdoc(optionsJsDoc);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
-// app.use(function (req, res, next) {
-//     res.setHeader(
-//         'Content-Security-Policy-Report-Only',
-//         "default-src 'self' http://www.databumi.id:20601; font-src 'self' http://www.databumi.id:20601; img-src 'self' http://www.databumi.id:20601; script-src 'self' http://www.databumi.id:20601; style-src 'self' http://www.databumi.id:20601; frame-src 'self'"
-//     );
-//     next();
-// });
 app.use(helmet())
 
 app.listen(process.env.node_port, () => console.log('Express server listening on port ' + process.env.node_port));
